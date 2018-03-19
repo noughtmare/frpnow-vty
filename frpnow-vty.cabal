@@ -2,7 +2,7 @@
 -- documentation, see http://haskell.org/cabal/users-guide/
 
 name:                frpnow-vty
-version:             0.2.0.0
+version:             0.2.0.1
 synopsis:            Program terminal applications with vty and frpnow!
 description:
   This package allows you to create vty terminal
