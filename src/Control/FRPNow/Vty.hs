@@ -11,6 +11,7 @@ module Control.FRPNow.Vty where
 import Control.FRPNow
 import qualified Graphics.Vty as Vty
 import Control.Monad (forever)
+import Control.Exception (bracket)
 
 -- | Alias for 'Vty.Event' to prevent name clash with 'Event'.
 type VEvent = Vty.Event
@@ -23,15 +24,14 @@ runNowVty
   -- ^ A now computation that takes a stream of vty events and produces
   -- a behavior of pictures and an ending event.
   -> IO a
-runNowVty conf m = do
-  vty <- Vty.mkVty conf
+runNowVty conf m = bracket (Vty.mkVty conf) Vty.shutdown $ \vty ->
   runNowMaster $ do
     (evs, cbk) <- callbackStream
     async (forever (Vty.nextEvent vty >>= cbk))
     (b `Until` e) <- m evs
     sync . Vty.update vty =<< sample b
     callIOStream (Vty.update vty) (toChanges b)
-    plan ((<$ sync (Vty.shutdown vty)) <$> e)
+    pure e
 
 -- | Like 'runNowVty', but does not allow IO.
 runNowVtyPure
